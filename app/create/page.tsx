@@ -296,7 +296,7 @@ function CreatePageContent() {
       {/* 表单内容 */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="space-y-4">
-          {/* 步骤1：场景信息 - 单个大卡片，从上到下依次为基本信息、场景标签、附件资料 */}
+          {/* 步骤1：场景信息 - 单个大卡片，从上到下依次为基本信息、场景标签���附件资料 */}
           {step === 1 && (
             <Card>
               <CardContent className="pt-6 space-y-6">
@@ -337,7 +337,7 @@ function CreatePageContent() {
                       <Label htmlFor="initiator" className="text-sm font-medium">发起方 *</Label>
                       <Input
                         id="initiator"
-                        placeholder="XX公司/团队"
+                        placeholder="例如：某某公司/团队"
                         value={formData.initiator}
                         onChange={(e) => updateFormData("initiator", e.target.value)}
                         className="h-10"
