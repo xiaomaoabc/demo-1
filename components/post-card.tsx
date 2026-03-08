@@ -30,9 +30,9 @@ function PostCardContent({ post, displayTitle, domainTags, customTags }: {
 }) {
   return (
     <>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-base font-semibold text-foreground leading-snug group-hover:text-foreground/80 transition-colors">
+          <h3 className="text-lg font-semibold text-foreground leading-snug group-hover:text-foreground/80 transition-colors">
             {displayTitle}
           </h3>
           <Badge 
@@ -43,7 +43,7 @@ function PostCardContent({ post, displayTitle, domainTags, customTags }: {
           </Badge>
         </div>
         {/* 发起方和预算 - 标题下方 */}
-        <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <User className="h-3.5 w-3.5" />
             <span>{post.initiator || "未知发起方"}</span>
@@ -55,7 +55,7 @@ function PostCardContent({ post, displayTitle, domainTags, customTags }: {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
           {post.description}
         </p>
         
@@ -79,11 +79,14 @@ function PostCardContent({ post, displayTitle, domainTags, customTags }: {
           )}
         </div>
 
-        <div className="flex items-center justify-end text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
           <div className="flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
-            <span>截止 {post.endDate}</span>
+            <span>展示截止时间：{post.endDate}</span>
           </div>
+          <span className="text-primary font-medium">
+            还剩{Math.max(0, Math.ceil((new Date(post.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}天
+          </span>
         </div>
       </CardContent>
     </>

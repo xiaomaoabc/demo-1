@@ -533,7 +533,9 @@ function CreatePageContent() {
             <Card>
               <CardContent className="pt-6 space-y-4">
                 <h3 className="text-sm font-semibold text-foreground">设置共创展示截止时间 *</h3>
-                <p className="text-xs text-muted-foreground">共创最多展示3个月</p>
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-800 font-medium">共创最多展示3个月</p>
+                </div>
 
                 <div className="space-y-2">
                   <Popover>
@@ -837,7 +839,7 @@ function CreatePageContent() {
           <DialogHeader>
             <DialogTitle className="text-center">确认提示</DialogTitle>
             <DialogDescription className="text-center pt-2">
-              为了方便他人联系您，您选填的手机号、微信、QQ将统一公开展示，请您确认是否依旧填写。
+              为了方便他人联系您，您选填的手机号、微信、QQ将<span className="text-red-600 font-medium">统一公开展示</span>，请您确认是否依旧填写。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 sm:justify-center">
