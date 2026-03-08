@@ -70,6 +70,7 @@ function CreatePageContent() {
   
   const [step, setStep] = useState(1)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [showContactConfirmDialog, setShowContactConfirmDialog] = useState(false)
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [customTagInput, setCustomTagInput] = useState("")
   const [isEditMode, setIsEditMode] = useState(false)
@@ -139,12 +140,24 @@ function CreatePageContent() {
   const canProceedStep3 = formData.contactEmail.trim() !== "" // 邮箱必填
   const canProceedStep4 = true // 预览确认步骤总是可以继续
 
+  const hasOptionalContactInfo = formData.contactPhone.trim() !== "" || formData.contactWeChat.trim() !== "" || formData.contactQQ.trim() !== ""
+
   const handleNext = () => {
     if (step < 4) {
+      // 第三步且有选填联系方式时，显示确认弹窗
+      if (step === 3 && hasOptionalContactInfo) {
+        setShowContactConfirmDialog(true)
+        return
+      }
       setStep(step + 1)
     } else {
       handleSubmit()
     }
+  }
+
+  const handleContactConfirm = () => {
+    setShowContactConfirmDialog(false)
+    setStep(4)
   }
 
   const handleBack = () => {
@@ -817,6 +830,26 @@ function CreatePageContent() {
           </Button>
         </div>
       </main>
+
+      {/* 联系方式公开确认弹窗 */}
+      <Dialog open={showContactConfirmDialog} onOpenChange={setShowContactConfirmDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">确认提示</DialogTitle>
+            <DialogDescription className="text-center pt-2">
+              为了方便他人联系您，您选填的手机号、微信、QQ将统一公开展示，请您确认是否依旧填写。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:justify-center">
+            <Button variant="outline" onClick={() => setShowContactConfirmDialog(false)}>
+              否
+            </Button>
+            <Button onClick={handleContactConfirm}>
+              是
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 提交成功弹窗 */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
