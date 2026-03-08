@@ -32,7 +32,7 @@ function PostCardContent({ post, displayTitle, domainTags, customTags }: {
     <>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-medium text-foreground leading-snug group-hover:text-foreground/80 transition-colors">
+          <h3 className="text-base font-semibold text-foreground leading-snug group-hover:text-foreground/80 transition-colors">
             {displayTitle}
           </h3>
           <Badge 
@@ -41,6 +41,17 @@ function PostCardContent({ post, displayTitle, domainTags, customTags }: {
           >
             {post.status}
           </Badge>
+        </div>
+        {/* 发起方和预算 - 标题下方 */}
+        <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <User className="h-3.5 w-3.5" />
+            <span>{post.initiator || "未知发起方"}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Wallet className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium text-foreground">{post.budget ? `${post.budget} 元` : "面议"}</span>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -68,16 +79,7 @@ function PostCardContent({ post, displayTitle, domainTags, customTags }: {
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-          <Wallet className="h-3.5 w-3.5 text-primary" />
-          <span className="font-medium text-foreground">预算：{post.budget ? `${post.budget} 元` : "面议"}</span>
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <User className="h-3.5 w-3.5" />
-            <span>{post.authorName}</span>
-          </div>
+        <div className="flex items-center justify-end text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
             <span>截止 {post.endDate}</span>
