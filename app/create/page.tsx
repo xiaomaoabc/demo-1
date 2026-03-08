@@ -11,7 +11,8 @@ import { Separator } from "@/components/ui/separator"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { ArrowLeft, ArrowRight, CalendarIcon, X, Check, Upload, AlertCircle, Mail, Phone, MessageCircle, FileText, User, Download } from "lucide-react"
+import { ArrowLeft, ArrowRight, CalendarIcon, X, Check, Upload, AlertCircle, Mail, Phone, MessageCircle, FileText, User, Download, HelpCircle } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import Link from "next/link"
@@ -69,6 +70,7 @@ function CreatePageContent() {
   
   const [step, setStep] = useState(1)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [showContactConfirmDialog, setShowContactConfirmDialog] = useState(false)
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [customTagInput, setCustomTagInput] = useState("")
   const [isEditMode, setIsEditMode] = useState(false)
@@ -133,17 +135,29 @@ function CreatePageContent() {
     }
   }
 
-  const canProceedStep1 = formData.title && formData.description && formData.initiator && formData.budget && formData.expectedOutput && formData.domainTags.length > 0 && formData.descriptionFiles.length > 0 && formData.resourceFiles.length > 0
+  const canProceedStep1 = formData.title && formData.description && formData.initiator && formData.budget && formData.expectedOutput && formData.domainTags.length > 0 && formData.descriptionFiles.length > 0
   const canProceedStep2 = formData.endDate
   const canProceedStep3 = formData.contactEmail.trim() !== "" // 邮箱必填
   const canProceedStep4 = true // 预览确认步骤总是可以继续
 
+  const hasOptionalContactInfo = formData.contactPhone.trim() !== "" || formData.contactWeChat.trim() !== "" || formData.contactQQ.trim() !== ""
+
   const handleNext = () => {
     if (step < 4) {
+      // 第三步且有选填联系方式时，显示确认弹窗
+      if (step === 3 && hasOptionalContactInfo) {
+        setShowContactConfirmDialog(true)
+        return
+      }
       setStep(step + 1)
     } else {
       handleSubmit()
     }
+  }
+
+  const handleContactConfirm = () => {
+    setShowContactConfirmDialog(false)
+    setStep(4)
   }
 
   const handleBack = () => {
@@ -282,7 +296,7 @@ function CreatePageContent() {
       {/* 表单内容 */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="space-y-4">
-          {/* 步骤1：场景信息 - 单个大卡片，从上到下依次为基本信息、场景标签、附件资料 */}
+          {/* 步骤1：场景信息 - 单个大卡片，从上到下依次为基本信息、场景标签���附件资料 */}
           {step === 1 && (
             <Card>
               <CardContent className="pt-6 space-y-6">
@@ -290,15 +304,20 @@ function CreatePageContent() {
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-foreground">基本信息</h3>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="title" className="text-sm font-medium">场景标题 *</Label>
-                    <Input
-                      id="title"
-                      placeholder="例如：智能家居场景交互设计共创"
-                      value={formData.title}
-                      onChange={(e) => updateFormData("title", e.target.value)}
-                      className="h-10"
-                    />
+<div className="space-y-2">
+                                    <Label htmlFor="title" className="text-sm font-medium">场景标题（最多不超过20个字） *</Label>
+                                    <Input
+                                      id="title"
+                                      placeholder="例如：智能家居场景交互设计共创"
+                                      value={formData.title}
+                                      onChange={(e) => {
+                                        if (e.target.value.length <= 20) {
+                                          updateFormData("title", e.target.value)
+                                        }
+                                      }}
+                                      maxLength={20}
+                                      className="h-10"
+                                    />
                   </div>
 
                   <div className="space-y-2">
@@ -318,7 +337,7 @@ function CreatePageContent() {
                       <Label htmlFor="initiator" className="text-sm font-medium">发起方 *</Label>
                       <Input
                         id="initiator"
-                        placeholder="XX公司/团队"
+                        placeholder="例如：某某公司/团队"
                         value={formData.initiator}
                         onChange={(e) => updateFormData("initiator", e.target.value)}
                         className="h-10"
@@ -342,16 +361,28 @@ function CreatePageContent() {
                         className="h-10"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="expectedOutput" className="text-sm font-medium">预期成果 *</Label>
-                      <Input
-                        id="expectedOutput"
-                        placeholder="原型/报告/代码"
-                        value={formData.expectedOutput}
-                        onChange={(e) => updateFormData("expectedOutput", e.target.value)}
-                        className="h-10"
-                      />
-                    </div>
+<div className="space-y-2">
+                                      <Label htmlFor="expectedOutput" className="text-sm font-medium flex items-center gap-1">
+                                        预期作品形式 *
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p className="max-w-[200px] text-xs">预期作品形式是指您希望最终产出的成果类型，如原型设计、分析报告、代码实现等</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      </Label>
+                                      <Input
+                                        id="expectedOutput"
+                                        placeholder="原型/报告/代码"
+                                        value={formData.expectedOutput}
+                                        onChange={(e) => updateFormData("expectedOutput", e.target.value)}
+                                        className="h-10"
+                                      />
+                                    </div>
                   </div>
                 </div>
 
@@ -436,96 +467,61 @@ function CreatePageContent() {
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-foreground">附件资料</h3>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* 关联描述文件 */}
-                    <div className="space-y-2">
-                      <div>
-                        <Label className="text-sm font-medium">关联描述文件 *</Label>
-                        <p className="text-xs text-muted-foreground mt-1">需求文档、设计稿等</p>
-                      </div>
-                      <div className="border-2 border-dashed border-border rounded-lg p-4 text-center relative hover:border-muted-foreground/50 transition-colors">
-                        <input
-                          type="file"
-                          multiple
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          onChange={(e) => {
-                            const files = e.target.files
-                            if (files) {
-                              const newFiles: Attachment[] = Array.from(files).map((file) => ({
-                                name: file.name,
-                                url: URL.createObjectURL(file),
-                                size: file.size
-                              }))
-                              updateFormData("descriptionFiles", [...formData.descriptionFiles, ...newFiles])
-                            }
-                          }}
-                        />
-                        <Upload className="h-6 w-6 mx-auto text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground mt-2">点击或拖拽上传</p>
-                      </div>
-                      {formData.descriptionFiles.length > 0 && (
-                        <div className="space-y-1 max-h-[80px] overflow-y-auto">
-                          {formData.descriptionFiles.map((file, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md border text-sm">
-                              <span className="truncate flex-1">{file.name}</span>
-                              <button
-                                onClick={() => {
-                                  updateFormData("descriptionFiles", formData.descriptionFiles.filter((_, i) => i !== index))
-                                }}
-                                className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                  {/* 关联描述附件 */}
+                  <div className="space-y-2">
+                    <div>
+                      <Label className="text-sm font-medium flex items-center gap-1">
+                        关联描述附件 *
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-[200px] text-xs">关联描述附件是与场景相关的补充说明文件，如需求文档、设计稿、参考资料等</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1">需求文档、设计稿等</p>
                     </div>
-
-                    {/* 资源包 */}
-                    <div className="space-y-2">
-                      <div>
-                        <Label className="text-sm font-medium">资源包 *</Label>
-                        <p className="text-xs text-muted-foreground mt-1">数据文件、示例代码等</p>
-                      </div>
-                      <div className="border-2 border-dashed border-border rounded-lg p-4 text-center relative hover:border-muted-foreground/50 transition-colors">
-                        <input
-                          type="file"
-                          multiple
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          onChange={(e) => {
-                            const files = e.target.files
-                            if (files) {
-                              const newFiles: Attachment[] = Array.from(files).map((file) => ({
-                                name: file.name,
-                                url: URL.createObjectURL(file),
-                                size: file.size
-                              }))
-                              updateFormData("resourceFiles", [...formData.resourceFiles, ...newFiles])
-                            }
-                          }}
-                        />
-                        <Upload className="h-6 w-6 mx-auto text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground mt-2">点击或拖拽上传</p>
-                      </div>
-                      {formData.resourceFiles.length > 0 && (
-                        <div className="space-y-1 max-h-[80px] overflow-y-auto">
-                          {formData.resourceFiles.map((file, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md border text-sm">
-                              <span className="truncate flex-1">{file.name}</span>
-                              <button
-                                onClick={() => {
-                                  updateFormData("resourceFiles", formData.resourceFiles.filter((_, i) => i !== index))
-                                }}
-                                className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    <div className="border-2 border-dashed border-border rounded-lg p-4 text-center relative hover:border-muted-foreground/50 transition-colors">
+                      <input
+                        type="file"
+                        multiple
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          const files = e.target.files
+                          if (files) {
+                            const newFiles: Attachment[] = Array.from(files).map((file) => ({
+                              name: file.name,
+                              url: URL.createObjectURL(file),
+                              size: file.size
+                            }))
+                            updateFormData("descriptionFiles", [...formData.descriptionFiles, ...newFiles])
+                          }
+                        }}
+                      />
+                      <Upload className="h-6 w-6 mx-auto text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground mt-2">点击或拖拽上传</p>
                     </div>
+                    {formData.descriptionFiles.length > 0 && (
+                      <div className="space-y-1 max-h-[80px] overflow-y-auto">
+                        {formData.descriptionFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md border text-sm">
+                            <span className="truncate flex-1">{file.name}</span>
+                            <button
+                              onClick={() => {
+                                updateFormData("descriptionFiles", formData.descriptionFiles.filter((_, i) => i !== index))
+                              }}
+                              className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -537,12 +533,8 @@ function CreatePageContent() {
             <Card>
               <CardContent className="pt-6 space-y-4">
                 <h3 className="text-sm font-semibold text-foreground">设置共创展示截止时间 *</h3>
-                
-                {/* 3个月限制提示 */}
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm text-amber-800">
-                    <span className="font-medium">提示：</span>截止时间最多可设置为从今天起 <span className="font-semibold">3个月</span> 内，超过3个月的日期将无法选择。
-                  </p>
+                  <p className="text-sm text-amber-800 font-medium">共创最多展示3个月</p>
                 </div>
 
                 <div className="space-y-2">
@@ -690,7 +682,7 @@ function CreatePageContent() {
                       </div>
 
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground shrink-0 whitespace-nowrap">预期成果形式：</span>
+                        <span className="text-muted-foreground shrink-0 whitespace-nowrap">预期作品形式：</span>
                         <span className="truncate">{formData.expectedOutput || "未填写"}</span>
                       </div>
 
@@ -779,59 +771,31 @@ function CreatePageContent() {
                 {/* 附件 */}
                 <div>
                   <h3 className="text-sm font-medium mb-3 text-foreground">附件</h3>
-                  {(formData.descriptionFiles.length > 0 || formData.resourceFiles.length > 0) ? (
+                  {formData.descriptionFiles.length > 0 ? (
                     <div className="space-y-4">
-                      {/* 关联描述文件 */}
-                      {formData.descriptionFiles.length > 0 && (
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-2">关联描述文件</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {formData.descriptionFiles.map((file, index) => (
-                              <div 
-                                key={index} 
-                                className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                              >
-                                <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-sm truncate max-w-[180px]" title={file.name}>{file.name}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {(file.size / 1024).toFixed(1)} KB
-                                    </p>
-                                  </div>
+                      {/* 关联描述附件 */}
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-2">关联描述附件</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {formData.descriptionFiles.map((file, index) => (
+                            <div 
+                              key={index} 
+                              className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                            >
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm truncate max-w-[180px]" title={file.name}>{file.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {(file.size / 1024).toFixed(1)} KB
+                                  </p>
                                 </div>
-                                <Download className="h-4 w-4 text-muted-foreground shrink-0" />
                               </div>
-                            ))}
-                          </div>
+                              <Download className="h-4 w-4 text-muted-foreground shrink-0" />
+                            </div>
+                          ))}
                         </div>
-                      )}
-
-                      {/* 资源包 */}
-                      {formData.resourceFiles.length > 0 && (
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-2">资源包</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {formData.resourceFiles.map((file, index) => (
-                              <div 
-                                key={index} 
-                                className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                              >
-                                <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-sm truncate max-w-[180px]" title={file.name}>{file.name}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {(file.size / 1024).toFixed(1)} KB
-                                    </p>
-                                  </div>
-                                </div>
-                                <Download className="h-4 w-4 text-muted-foreground shrink-0" />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">无</p>
@@ -869,13 +833,33 @@ function CreatePageContent() {
         </div>
       </main>
 
+      {/* 联系方式公开确认弹窗 */}
+      <Dialog open={showContactConfirmDialog} onOpenChange={setShowContactConfirmDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">确认提示</DialogTitle>
+            <DialogDescription className="text-center pt-2">
+              为了方便他人联系您，您选填的手机号、微信、QQ将<span className="text-red-600 font-medium">统一公开展示</span>，请您确认是否依旧填写。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:justify-center">
+            <Button variant="outline" onClick={() => setShowContactConfirmDialog(false)}>
+              否
+            </Button>
+            <Button onClick={handleContactConfirm}>
+              是
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 提交成功弹窗 */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center">提交成功</DialogTitle>
             <DialogDescription className="text-center pt-2">
-              已提交，���管理员审核通过
+              已提交，请等待管理员审核通过
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-center">

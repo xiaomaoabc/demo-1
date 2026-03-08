@@ -308,7 +308,7 @@ export default function PostDetailPage() {
                     </div>
 
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-muted-foreground shrink-0 whitespace-nowrap">预期成果形式：</span>
+                      <span className="text-muted-foreground shrink-0 whitespace-nowrap">预期作品形式：</span>
                       <span className="truncate">{post.expectedOutput || "未填写"}</span>
                     </div>
 
