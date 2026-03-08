@@ -97,11 +97,10 @@ export function PostCard({ post, isMyPost, onEnd, onEdit }: PostCardProps) {
   const domainTags = post.domainTags || []
   const customTags = post.customTags || []
   
-  // 标题超过12个字时，显示前11个字符并添加省略号
-  const MAX_TITLE_LENGTH = 12
-  const TRUNCATE_LENGTH = 11
+  // 标题超过9个字时，显示前9个字符并添加省略号
+  const MAX_TITLE_LENGTH = 9
   const displayTitle = post.title.length > MAX_TITLE_LENGTH 
-    ? post.title.slice(0, TRUNCATE_LENGTH) + "..." 
+    ? post.title.slice(0, MAX_TITLE_LENGTH) + "..." 
     : post.title
 
   // 处理结束
